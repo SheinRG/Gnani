@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gnani Audio Notes — Concept & Build Reference</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "Segoe UI", Calibri, system-ui, sans-serif;
+    font-size: 10.2pt; line-height: 1.5; color: #1a1a1a; margin: 0;
+  }
+  h1 { font-size: 21pt; margin: 0 0 2mm; color: #0b2545; letter-spacing: -.4pt; }
+  h2 {
+    font-size: 14pt; margin: 9mm 0 3mm; color: #0b2545;
+    border-bottom: 2px solid #0b2545; padding-bottom: 1.5mm;
+    page-break-after: avoid;
+  }
+  h3 { font-size: 11.5pt; margin: 6mm 0 2mm; color: #12395e; page-break-after: avoid; }
+  h4 { font-size: 10.4pt; margin: 4mm 0 1.5mm; color: #333; page-break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1.2mm; }
+  code {
+    font-family: Consolas, "Courier New", monospace; font-size: 9pt;
+    background: #eef1f5; padding: 0.4mm 1.2mm; border-radius: 2px; color: #0b2545;
+  }
+  pre {
+    font-family: Consolas, "Courier New", monospace; font-size: 8.6pt;
+    background: #f5f7fa; border-left: 3px solid #8fa8c4; padding: 2.5mm 3mm;
+    margin: 0 0 3mm; white-space: pre-wrap; line-height: 1.4;
+    page-break-inside: avoid;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 0 0 4mm; font-size: 9.2pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #0b2545; color: #fff; text-align: left;
+    padding: 1.8mm 2.2mm; font-weight: 600;
+  }
+  td { padding: 1.6mm 2.2mm; border-bottom: 1px solid #d8dee6; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  .lead {
+    font-size: 10.6pt; color: #333; background: #f2f6fa;
+    border-left: 4px solid #0b2545; padding: 3mm 4mm; margin: 0 0 5mm;
+  }
+  .callout {
+    background: #fff8e6; border-left: 4px solid #d99b00;
+    padding: 2.5mm 3.5mm; margin: 0 0 4mm; page-break-inside: avoid;
+  }
+  .danger {
+    background: #fdf0f0; border-left: 4px solid #c0392b;
+    padding: 2.5mm 3.5mm; margin: 0 0 4mm; page-break-inside: avoid;
+  }
+  .ok {
+    background: #f0f8f2; border-left: 4px solid #2e7d4f;
+    padding: 2.5mm 3.5mm; margin: 0 0 4mm; page-break-inside: avoid;
+  }
+  .meta { color: #5a6472; font-size: 9pt; margin-bottom: 6mm; }
+  .term { font-weight: 700; color: #0b2545; }
+  .pagebreak { page-break-before: always; }
+  .toc { font-size: 9.6pt; column-count: 2; column-gap: 8mm; }
+  .toc div { margin-bottom: 1mm; break-inside: avoid; }
+  .step {
+    background: #0b2545; color: #fff; display: inline-block;
+    padding: 0.6mm 2.2mm; border-radius: 2px; font-size: 9pt;
+    font-weight: 600; margin-right: 2mm;
+  }
+  hr { border: none; border-top: 1px solid #d8dee6; margin: 6mm 0; }
+  .small { font-size: 9pt; color: #5a6472; }
+</style>
+</head>
+<body>
+
+<h1>Gnani Audio Notes — Concept &amp; Build Reference</h1>
+<div class="meta">
+  Full-Stack / AI Engineer internship take-home &middot; Gnani.ai &middot; Prepared 24 Aug 2026 &middot; Submission deadline Fri 28 Aug 2026, 23:59 IST
+</div>
+
+<div class="lead">
+  <strong>How to use this document.</strong> Part 3 is the spine — one realistic story that touches every
+  technical concept in the project, in the exact order they occur. If you can retell that story out loud
+  without notes, you can defend this project in an interview. Part 8 is the flashcard glossary for quick revision.
+</div>
+
+<h3 style="margin-top:0">Contents</h3>
+<div class="toc">
+  <div>1 &mdash; What the assignment actually is</div>
+  <div>2 &mdash; Why Gnani set <em>this</em> assignment</div>
+  <div>3 &mdash; The real-life scenario, end to end</div>
+  <div>4 &mdash; ASR concepts specific to this company</div>
+  <div>5 &mdash; The 15 locked design decisions</div>
+  <div>6 &mdash; Assumptions baked into the build</div>
+  <div>7 &mdash; Timeline, blockers and cut list</div>
+  <div>8 &mdash; Glossary for quick revision</div>
+  <div>9 &mdash; Interview questions to rehearse</div>
+</div>
+
+<h2>1 &mdash; What the assignment actually is</h2>
+
+<p>Strip away the jargon and it is this:</p>
+
+<div class="lead" style="margin-bottom:4mm">
+  Someone gives your website a recording of a person talking. Your website gives back the words that were
+  said, plus a short summary of them. And it remembers everything they have uploaded before.
+</div>
+
+<p>Three deliverables to the user: <span class="term">a transcript</span>, <span class="term">a summary</span>,
+<span class="term">a history</span>. Everything else in the plan exists to make those three things work reliably.</p>
+
+<p>The brief also names four hard requirements:</p>
+<ul>
+  <li>It must be <strong>deployed</strong> — a URL that works with no setup on the reviewer's machine.</li>
+  <li>It must have an <strong>/architecture page</strong> explaining the system, linking the GitHub repo.</li>
+  <li>It must <strong>handle failures visibly</strong> — upload errors, API timeouts, corrupt files.</li>
+  <li>It must <strong>show upload and processing progress</strong>.</li>
+</ul>
+
+<h2>2 &mdash; Why Gnani set <em>this</em> assignment</h2>
+
+<p><span class="term">ASR = Automatic Speech Recognition.</span> Software that listens to audio and writes down
+the words. Also called <span class="term">STT (Speech-To-Text)</span> — same thing, two names. Gnani's product
+<em>is</em> ASR, specifically for Indian languages. That is their entire company.</p>
+
+<p>Now look at these two facts side by side.</p>
+
+<table>
+  <tr><th style="width:50%">The brief says</th><th>Gnani's API docs say</th></tr>
+  <tr>
+    <td>"User uploads an audio file (<strong>2+ min</strong>)"</td>
+    <td>Maximum duration: <strong>60 seconds</strong> (ideal &le; 30s)</td>
+  </tr>
+</table>
+
+<div class="danger">
+  <strong>This is not an accident.</strong> The assignment is impossible if you use their API the obvious way.
+  They deliberately asked for something their own synchronous endpoint cannot do in a single call. The real
+  question being asked is: <em>when you hit a wall, do you notice it, and what do you build?</em>
+</div>
+
+<p>Everything else on their list — progress bars, error handling, the architecture page — checks whether you
+can build a <strong>system</strong> rather than a <strong>script</strong>. A script calls an API. A system
+handles the file being 12 minutes long, the API being down, the user closing the tab, and the file being a
+corrupted MP3 that is actually a renamed PDF.</p>
+
+<h4>The documented API contract</h4>
+<table>
+  <tr><th style="width:30%">Field</th><th>Value</th></tr>
+  <tr><td>Endpoint</td><td><code>POST https://api.vachana.ai/stt/v3</code></td></tr>
+  <tr><td>Auth header</td><td><code>X-API-Key-ID: &lt;your key&gt;</code></td></tr>
+  <tr><td>Body</td><td><code>multipart/form-data</code> — <code>audio_file</code>, <code>language_code</code></td></tr>
+  <tr><td>Optional</td><td><code>format</code> = <code>verbatim</code> (default) or <code>transcribe</code> (enables ITN)</td></tr>
+  <tr><td>Formats</td><td>WAV, MP3, OGG, FLAC, AAC, M4A — auto-converted to 16 kHz mono</td></tr>
+  <tr><td>Max duration</td><td><strong>60 seconds</strong></td></tr>
+  <tr><td>Model</td><td>Synchronous — one request, one response, no job polling</td></tr>
+  <tr><td>Response</td><td><code>{ success, request_id, timestamp, transcript }</code></td></tr>
+  <tr><td>Errors</td><td><code>400</code> invalid, <code>429</code> rate limit, <code>500</code> internal, <code>503</code> unavailable</td></tr>
+  <tr><td>Languages</td><td>bn-IN, en-IN, gu-IN, hi-IN, kn-IN, ml-IN, mr-IN, pa-IN, ta-IN, te-IN</td></tr>
+</table>
+
+<div class="pagebreak"></div>
+<h2>3 &mdash; The real-life scenario, end to end</h2>
+
+<p>Meet <strong>Priya</strong>. She is a sales rep. She has just finished a 7-minute call with a client and
+recorded it on her phone. She wants notes without listening again. Here is every single thing that happens
+from the moment she opens your site.</p>
+
+<h3><span class="step">0</span> The two computers</h3>
+
+<p>There are always two computers in a web app.</p>
+<ul>
+  <li><span class="term">The client</span> — Priya's phone, running your React code inside her browser. She
+  can see it. She can open DevTools and read every line. <strong>Never put a secret here.</strong></li>
+  <li><span class="term">The server</span> — a computer in a data centre running your backend code. She cannot
+  see inside it. Your Gnani API key lives here and only here.</li>
+</ul>
+
+<div class="callout">
+  <strong>Why this matters practically:</strong> if you called Gnani's API from the browser, your API key would
+  be visible to anyone who opens DevTools, and they would spend your Rs. 1,000 of credits. So every call to
+  Gnani goes from <em>your server</em>, never from the browser.
+</div>
+
+<h3><span class="step">1</span> She drops the file in</h3>
+
+<p>She picks <strong>English (India)</strong> from the dropdown and drags in <code>call_recording.m4a</code>
+— 7 minutes, 6 MB.</p>
+
+<h4>Why a language dropdown?</h4>
+<p>Gnani's API has a <strong>required</strong> parameter called <code>language_code</code>. It does not guess.
+You must tell it "this audio is Hindi" or "this audio is Tamil". The codes look like <code>hi-IN</code>,
+<code>ta-IN</code>, <code>en-IN</code> — that format is a standard called <span class="term">BCP-47</span>.
+<code>hi</code> is the language, <code>IN</code> is the region. So <code>en-IN</code> means "English as spoken
+in India", which is a genuinely different acoustic model from American English — trained on Indian accents.</p>
+
+<h3><span class="step">2</span> Storage, and why there are two kinds</h3>
+
+<p>Your app stores two completely different kinds of thing.</p>
+
+<table>
+  <tr>
+    <th style="width:22%"></th>
+    <th>Vercel Blob (object storage)</th>
+    <th>Neon Postgres (database)</th>
+  </tr>
+  <tr>
+    <td><strong>Stores</strong></td>
+    <td>Big files — the actual audio bytes</td>
+    <td>Small structured facts — "note 47 is 7 min long, status = processing"</td>
+  </tr>
+  <tr>
+    <td><strong>Good at</strong></td>
+    <td>Holding megabytes cheaply</td>
+    <td>Answering questions like "list Priya's notes, newest first"</td>
+  </tr>
+  <tr>
+    <td><strong>Bad at</strong></td>
+    <td>Being queried</td>
+    <td>Holding megabytes</td>
+  </tr>
+</table>
+
+<p><span class="term">Blob</span> literally means Binary Large OBject. Object storage is a hard drive on the
+internet: you hand it a file, it hands you back a URL. It cannot answer "which files are longer than 5 minutes"
+— that is what the database is for.</p>
+
+<p><strong>So: the audio goes in Blob, the facts about the audio go in Postgres.</strong> The database stores
+the Blob's URL as a text column, linking the two.</p>
+
+<h4>The upload itself</h4>
+<p>Priya's browser sends the file <strong>directly</strong> to Blob. Your server only issues a short-lived
+permission slip (a "client token") saying "this browser may upload one file". The 6 MB never touches your server.</p>
+
+<p>Two reasons for doing it that way:</p>
+<ol>
+  <li>Your server is not tied up for 40 seconds shovelling bytes.</li>
+  <li>The browser upload API gives you an <code>onUploadProgress</code> event that fires as bytes leave the
+  phone. <strong>That is how you draw a real progress bar.</strong> The standard <code>fetch()</code> function
+  gives you nothing while uploading — you would have no idea whether it was at 5% or 95%.</li>
+</ol>
+
+<h3><span class="step">3</span> The job is created</h3>
+
+<p>Upload finishes. The browser tells your server: "done, here is the Blob URL, language is en-IN."</p>
+
+<p>Your server writes a row to the database:</p>
+<pre><code>notes: id=47, status='pending', language='en-IN', blob_url='https://...'</code></pre>
+
+<p>…and <strong>immediately replies <code>202 Accepted</code></strong> with <code>{ id: 47 }</code>.</p>
+
+<h4>HTTP status codes you should know cold</h4>
+<table>
+  <tr><th style="width:16%">Code</th><th style="width:42%">Means</th><th>Where you will see it</th></tr>
+  <tr><td><code>200 OK</code></td><td>Worked</td><td>A successful transcript</td></tr>
+  <tr><td><code>202 Accepted</code></td><td>"I have taken your request, I will work on it"</td><td>Your job creation endpoint</td></tr>
+  <tr><td><code>400 Bad Request</code></td><td>You sent something invalid</td><td>Gnani rejects a bad audio format</td></tr>
+  <tr><td><code>401 Unauthorized</code></td><td>Bad or missing API key</td><td>Wrong <code>X-API-Key-ID</code></td></tr>
+  <tr><td><code>429 Too Many Requests</code></td><td><strong>You are going too fast, slow down</strong></td><td>Gnani rate-limiting your fan-out</td></tr>
+  <tr><td><code>500 Internal Server Error</code></td><td>Their code broke</td><td>A Gnani hiccup</td></tr>
+  <tr><td><code>503 Service Unavailable</code></td><td>They are down or overloaded</td><td>Gnani maintenance</td></tr>
+</table>
+
+<h4>Why 202 and not 200?</h4>
+<p>Because transcribing 7 minutes of audio takes roughly 60 seconds, and an HTTP request that hangs for 60
+seconds will be killed by browsers, proxies and load balancers. So you do not make her wait on the request.
+You say "got it, job 47", close the connection, and do the work separately.</p>
+
+<table>
+  <tr><th style="width:24%">Term</th><th>Meaning</th><th style="width:26%">Analogy</th></tr>
+  <tr><td><span class="term">Synchronous</span></td><td>Ask, and wait on the line for the answer</td><td>A phone call</td></tr>
+  <tr><td><span class="term">Asynchronous</span></td><td>Ask, hang up, get told later</td><td>Sending a text</td></tr>
+</table>
+
+<p>Gnani's <code>/stt/v3</code> endpoint is synchronous. <strong>Your</strong> job endpoint is asynchronous.</p>
+
+<h3><span class="step">4</span> Validation, before you spend a rupee</h3>
+
+<p>The job starts. The first thing it does — before touching Gnani — is run <strong>ffprobe</strong>.</p>
+
+<p><span class="term">ffmpeg</span> is the universal audio and video tool. It converts, cuts, merges and
+analyses almost any media format. It is a command-line program — you run it with arguments, not by importing
+a library. <span class="term">ffprobe</span> is its inspector twin: it changes nothing, it only reports
+<em>what a file is</em>.</p>
+
+<p>You run ffprobe and it reports: duration 7m 12s, codec AAC, 44.1 kHz, stereo. That gives you three things:</p>
+
+<ol>
+  <li><strong>Corrupt-file detection.</strong> If someone renames <code>invoice.pdf</code> to
+  <code>audio.mp3</code>, ffprobe fails immediately with "Invalid data found when processing input". You fail
+  the job in 200 ms with a clear message, instead of sending garbage to Gnani and burning credits on 14 failed calls.</li>
+  <li><strong>True duration.</strong> The browser lies about this or does not know. ffprobe is authoritative.</li>
+  <li><strong>Enforcing the 10-minute cap.</strong> A 45-minute podcast gets rejected here, cheaply, before any API spend.</li>
+</ol>
+
+<div class="callout">
+  This is called a <span class="term">pre-flight check</span> — validate before committing to expensive work.
+  Same idea as checking you have your passport before driving to the airport.
+</div>
+
+<div class="pagebreak"></div>
+<h3><span class="step">5</span> Chunking — the heart of the whole thing</h3>
+
+<p>7m 12s = 432 seconds. Gnani accepts 60. You need pieces.</p>
+
+<h4>The naive approach, and why it is bad</h4>
+<p>Cut every 30 seconds: <code>ffmpeg -f segment -segment_time 30</code>. Fifteen pieces, one command. But at
+exactly 30.000 seconds Priya was mid-sentence:</p>
+
+<pre>"...so the revenue pro | jection for Q3 looks strong..."</pre>
+
+<p>The word <code>projection</code> is sliced in half. The ASR hears half a word in each chunk and produces
+garbage at every seam. In a 7-minute file that is <strong>14 damaged spots</strong>, and a reviewer running
+one demo will see all of them.</p>
+
+<h4>Silence-aware splitting</h4>
+<p>Run ffmpeg's <code>silencedetect</code> filter first. It scans the audio and reports every moment quieter
+than a threshold for longer than, say, 0.3 seconds — every natural pause between sentences:</p>
+
+<pre>silence_start: 24.8   silence_end: 25.4
+silence_start: 51.2   silence_end: 51.9
+...</pre>
+
+<p>Then instead of cutting blindly at 25 s, you cut at <strong>the nearest silence to the 25 s mark</strong>
+— 24.8 s here. Nobody was speaking. No word is damaged. If there is no silence within &plusmn;5 s (someone
+talking non-stop), you cut at 30 s anyway, because 30 is the hard ceiling.</p>
+
+<div class="ok">
+  This costs one extra ffmpeg pass and some text parsing. It is the single most technically interesting thing
+  in the entire project, and it is exactly what <strong>"long-audio handling"</strong> means on the architecture page.
+</div>
+
+<p>Result: 15 chunks, roughly 25–29 s each, each cut at a pause. You write 15 rows to the
+<code>chunks</code> table:</p>
+
+<pre><code>chunks: note_id=47, idx=0, start_ms=0,     end_ms=24800, status='pending'
+        note_id=47, idx=1, start_ms=24800, end_ms=51200, status='pending'
+        ...</code></pre>
+
+<p>You keep <code>idx</code> because <strong>the pieces must be reassembled in order</strong> — chunk 7's text
+has to land between 6 and 8. You keep <code>start_ms</code> and <code>end_ms</code> because if chunk 7 fails,
+you can tell the user exactly which 26 seconds of their recording are missing.</p>
+
+<h3><span class="step">6</span> Fan-out, concurrency and retries</h3>
+
+<h4>Fan-out</h4>
+<p><span class="term">Fan-out</span> = taking one task and splitting it into many parallel sub-tasks. Picture
+one arrow coming in and fifteen arrows going out. The reverse — collecting the fifteen results back into one
+— is called <span class="term">fan-in</span>.</p>
+
+<p>The alternative is <span class="term">sequential</span>: chunk 0, wait, chunk 1, wait, chunk 2… At roughly
+3 seconds each that is 45 seconds. Fan-out does them at the same time.</p>
+
+<h4>Concurrency</h4>
+<p><span class="term">Concurrency = how many things you allow to be in progress simultaneously.</span></p>
+
+<p>"Concurrency 4" means at most 4 requests to Gnani are in flight at any moment. When one finishes, the next
+chunk starts. Like a shop with 4 checkout counters and 15 customers — 4 are being served, the rest wait in
+line, and it stays exactly 4 until the queue empties.</p>
+
+<table>
+  <tr><th style="width:30%">Question</th><th>Answer</th></tr>
+  <tr>
+    <td>Why not fire all 15 at once?</td>
+    <td>Gnani sends back <code>429 Too Many Requests</code>. Their docs list <code>429</code> as a real error
+    but publish no actual rate limit, so you are flying blind — start conservative.</td>
+  </tr>
+  <tr>
+    <td>Why not 1 (sequential)?</td>
+    <td>45 seconds of staring at a screen versus ~12 seconds is a real product difference.</td>
+  </tr>
+</table>
+
+<p><strong>Net effect: 15 chunks, 4 at a time, roughly 12 seconds total.</strong></p>
+
+<h4>Retries and exponential backoff</h4>
+<p>Networks fail. APIs hiccup. Chunk 7 comes back <code>500</code>.</p>
+
+<p><span class="term">Retry</span> = try again. "3 retries" = try up to 3 more times before giving up.</p>
+
+<p>But <em>when</em> do you retry? If you retry instantly and the reason for failure was that Gnani is
+overloaded, you have just added more load to an overloaded server. So you wait, and you wait longer each time:</p>
+
+<table>
+  <tr><th style="width:30%">Attempt</th><th>Wait before it</th></tr>
+  <tr><td>1st retry</td><td>1 second</td></tr>
+  <tr><td>2nd retry</td><td>2 seconds</td></tr>
+  <tr><td>3rd retry</td><td>4 seconds</td></tr>
+</table>
+
+<p>Each wait is double the last. That doubling is why it is called <span class="term">exponential backoff</span>.
+It gives a struggling service room to recover instead of stampeding it.</p>
+
+<p class="small">In production you would also add <span class="term">jitter</span> — a small random offset — so
+that if 100 clients all fail at once they do not all retry at the same instant. Worth knowing the word;
+overkill for this project.</p>
+
+<h4>Which errors do you retry?</h4>
+<table>
+  <tr><th style="width:26%">Error</th><th style="width:20%">Action</th><th>Why</th></tr>
+  <tr><td><code>429 / 500 / 503</code></td><td><strong>Retry</strong></td><td><span class="term">Transient</span> — it might work in a second</td></tr>
+  <tr><td><code>400 Bad Request</code></td><td><strong>Do not retry</strong></td><td><span class="term">Permanent</span> — the audio format is wrong and will be wrong forever. Retrying wastes 3 calls to learn nothing.</td></tr>
+</table>
+
+<div class="callout">
+  Knowing the difference between a <strong>transient</strong> failure and a <strong>permanent</strong> one is
+  the whole skill here. Retry the first kind, surface the second immediately.
+</div>
+
+<h4>After the retries are exhausted</h4>
+<p>Chunk 7 has failed 4 times. Two philosophies:</p>
+<ul>
+  <li><strong>All-or-nothing:</strong> the note failed. Throw away the 14 successful transcriptions and the credits spent on them.</li>
+  <li><strong>Graceful degradation:</strong> keep the 14, insert a marker where 7 should have been, tell the user clearly.</li>
+</ul>
+
+<p>We chose graceful degradation. Priya's transcript reads:</p>
+
+<pre>...discussed the migration timeline.
+[transcription unavailable: 3:04-3:31]
+...and she confirmed the budget was approved.</pre>
+
+<p>The note is marked <code>completed_with_errors</code>, a banner says "1 of 15 segments failed", and a
+<strong>Retry failed segments</strong> button re-runs only chunk 7 — which is cheap, because the
+<code>chunks</code> table knows exactly which one broke and where it starts.</p>
+
+<div class="ok">
+  She got 93% of her value instead of 0%. <strong>That is what "handle failures visibly" means:</strong> the
+  failure is <em>shown</em>, not hidden, and not fatal.
+</div>
+
+<h3><span class="step">7</span> Stitching</h3>
+<p>All chunks done. Fetch them ordered by <code>idx</code>, join the text, and you have the full transcript.
+This is the <span class="term">fan-in</span>.</p>
+
+<div class="pagebreak"></div>
+<h3><span class="step">8</span> The summary</h3>
+
+<p>The transcript (~1,100 words for 7 minutes) goes to an <span class="term">LLM (Large Language Model)</span>
+— ChatGPT-style AI. Gnani does not sell one; they do speech, not text generation. So this comes from elsewhere.</p>
+
+<p>You send a <span class="term">prompt</span> — an instruction plus the transcript — and ask for
+<span class="term">structured output</span>. That last part matters. If you just ask "summarise this", you get
+a paragraph of prose you would have to parse with string manipulation. Instead you define a
+<span class="term">schema</span> (using Zod, a TypeScript library for describing data shapes):</p>
+
+<pre><code>{ title: string, tldr: string, keyPoints: string[], actionItems: string[] }</code></pre>
+
+<p>and the AI SDK's <code>generateObject()</code> guarantees you get back exactly that shape, validated, or it
+throws. No parsing, no "sometimes it wrapped the answer in markdown".</p>
+
+<div class="callout">
+  <strong>The title is the sneaky-valuable field.</strong> Without it, Priya's history page is a list of
+  <code>WhatsApp Audio 2026-08-24 at 14.32.m4a</code>. With it, it is "Acme Corp — Q3 renewal discussion".
+  That one field is the difference between a demo and a product.
+</div>
+
+<p><span class="term">Vercel AI Gateway</span> is a middleman: instead of integrating with Anthropic and OpenAI
+and Google separately, you send everything to the Gateway with a model name like
+<code>"anthropic/claude-sonnet-4-5"</code> and it routes for you. One API key instead of three, plus
+<span class="term">model fallback</span> — if the primary model is down it automatically tries a backup. That
+fallback is a direct, honest answer to the brief's "API timeouts" requirement.</p>
+
+<h3><span class="step">9</span> Meanwhile — what has Priya been seeing?</h3>
+
+<p>This whole time, roughly 75 seconds, Priya watches a progress display. How does it know?</p>
+
+<p><span class="term">Polling.</span> Her browser asks your server "what is the status of job 47?" every 2
+seconds. Your server reads the database and answers. Ask, wait 2 s, ask again. Like refreshing a package
+tracking page, automatically.</p>
+
+<pre><code>GET /api/jobs/47  →  { status: 'transcribing', done: 7, total: 15 }</code></pre>
+
+<table>
+  <tr><th style="width:22%">Option</th><th style="width:38%">How it works</th><th>Why not here</th></tr>
+  <tr>
+    <td><strong>Polling</strong> (chosen)</td>
+    <td>Client asks repeatedly</td>
+    <td>Simple, survives a page refresh, works everywhere</td>
+  </tr>
+  <tr>
+    <td>SSE (Server-Sent Events)</td>
+    <td>Server holds a connection open and pushes updates</td>
+    <td>The work runs in a <em>different</em> server invocation, so an SSE endpoint would have to poll the
+    database internally anyway — same polling, more complexity</td>
+  </tr>
+  <tr>
+    <td>WebSockets</td>
+    <td>Two-way persistent connection</td>
+    <td>Massive overkill — you have no two-way traffic</td>
+  </tr>
+</table>
+
+<p>Because progress lives in <strong>Postgres</strong> and not in browser memory, Priya can close her laptop,
+reopen it, and the page picks up at "Transcribing 11/15". That is a real feature you get free from putting
+state in the database.</p>
+
+<h4>What she actually sees — the state machine</h4>
+<pre>Uploading 62%  →  Validating audio  →  Splitting into 15 segments
+               →  Transcribing 7/15  →  Summarizing  →  Done</pre>
+
+<p>Every one of those numbers is <strong>measured</strong>, not animated. <code>7/15</code> is a literal
+<code>COUNT(*) WHERE status='done'</code> from your chunks table. You earned that number by chunking — a
+candidate who sent one big file to a batch API can only show a spinner.</p>
+
+<h3><span class="step">10</span> What if the server dies mid-job?</h3>
+
+<p>Serverless functions can be killed. Deploys happen. Things crash. If your job dies at chunk 9, note 47 sits
+at <code>status='processing'</code> forever and Priya's page spins until she gives up.</p>
+
+<p>So: a <span class="term">stale-job reaper</span>. A <span class="term">cron job</span> (a task that runs
+automatically on a schedule) fires every 5 minutes and runs one query — "any note still <code>processing</code>
+that started more than 15 minutes ago?" — and marks those <code>failed</code> with "processing timed out".</p>
+
+<div class="ok">
+  Small piece of code, big signal. It is the difference between "I built the happy path" and "I thought about
+  what happens when it breaks."
+</div>
+
+<h3><span class="step">11</span> The history</h3>
+
+<p>Priya returns tomorrow. How does your app know which notes are hers, with no login?</p>
+
+<p>A <span class="term">cookie</span> — a small piece of data the server asks the browser to store and send
+back on every future request. On her first visit you generate a random ID and set it as an
+<span class="term">httpOnly cookie</span> (<code>httpOnly</code> means JavaScript on the page cannot read it,
+only the server can — this protects against certain attacks). Every note she creates is tagged with that ID.
+Her list is <code>SELECT * FROM notes WHERE session_id = &lt;her cookie&gt;</code>.</p>
+
+<p>No signup, no password, and the reviewer can use the app in 3 seconds. The honest limitation — clear your
+cookies and your notes are orphaned — goes on the architecture page.</p>
+
+<div class="pagebreak"></div>
+<h2>4 &mdash; ASR concepts specific to this company</h2>
+
+<p>Things that will come up if you work at an ASR company.</p>
+
+<table>
+  <tr><th style="width:24%">Concept</th><th>What it means</th></tr>
+  <tr>
+    <td><span class="term">Sample rate</span></td>
+    <td>Audio is captured by measuring air pressure many times per second. 16,000 times/sec = 16 kHz. Phone
+    calls are 8 kHz, music is 44.1 kHz. Gnani auto-converts everything to <strong>16 kHz mono</strong> — the
+    standard for speech models, because human speech lives below 8 kHz and higher rates add data without
+    adding information.</td>
+  </tr>
+  <tr>
+    <td><span class="term">Mono vs stereo</span></td>
+    <td>One channel vs two. Speech models want mono; stereo gets averaged down.</td>
+  </tr>
+  <tr>
+    <td><span class="term">ITN</span><br><span class="small">Inverse Text Normalization</span></td>
+    <td>Converting spoken forms to written forms: "twenty five" → "25", "january third" → "Jan 3". Gnani's
+    <code>format</code> parameter controls this — <code>verbatim</code> writes exactly what was said including
+    "um"; <code>transcribe</code> enables ITN. For notes and summaries, ITN reads far better. Core ASR vocabulary.</td>
+  </tr>
+  <tr>
+    <td><span class="term">Diarization</span></td>
+    <td>Figuring out <em>who</em> spoke <em>when</em> — "Speaker 1 said this, Speaker 2 said that". Gnani's
+    <code>/stt/v3</code> response has no diarization; it returns a flat string. That is why speaker labels are
+    impossible in this project and belong in "what I would improve", rather than having the LLM invent them.</td>
+  </tr>
+  <tr>
+    <td><span class="term">WER</span><br><span class="small">Word Error Rate</span></td>
+    <td>The standard accuracy metric for ASR — what percentage of words were wrong. This is <em>the</em> number
+    ASR companies compete on. Knowing this term signals you understand their industry.</td>
+  </tr>
+  <tr>
+    <td><span class="term">Code-switching</span></td>
+    <td>Mixing languages mid-sentence — "मैंने usko call किया but he didn't pick up." Extremely common in India
+    and genuinely hard for ASR. A big part of why Gnani exists as an Indian ASR company rather than everyone
+    just using an off-the-shelf model.</td>
+  </tr>
+</table>
+
+<h2>5 &mdash; The 15 locked design decisions</h2>
+
+<table>
+  <tr><th style="width:6%">#</th><th style="width:24%">Decision</th><th>Choice</th></tr>
+  <tr><td>1</td><td>Long audio</td><td>ffmpeg chunking + fan-out against the synchronous <code>/stt/v3</code>. No dependency on the undocumented batch API.</td></tr>
+  <tr><td>2</td><td>Hosting</td><td>Vercel · Next.js 16 App Router · Neon Postgres · Vercel Blob</td></tr>
+  <tr><td>3</td><td>Background work</td><td><code>waitUntil</code> + status rows in Postgres + client polling, with a Vercel Cron reaper for stuck jobs</td></tr>
+  <tr><td>4</td><td>Upload path</td><td>Browser → Blob directly via client token; <code>onUploadProgress</code> for real byte-level percentage</td></tr>
+  <tr><td>5</td><td>Chunking</td><td>Silence-aware — <code>silencedetect</code>, cut at nearest silence to ~25 s, hard cap 30 s</td></tr>
+  <tr><td>6</td><td>Chunk failure</td><td>Partial transcript + timestamped gap marker + <code>completed_with_errors</code> + "retry failed segments"</td></tr>
+  <tr><td>7</td><td>LLM</td><td>AI SDK <code>generateObject</code> via Vercel AI Gateway, with model fallback</td></tr>
+  <tr><td>8</td><td>Identity</td><td>Anonymous httpOnly cookie session + 2–3 seeded public demo notes</td></tr>
+  <tr><td>9</td><td>Language</td><td>Dropdown, all 10 BCP-47 codes, default <code>en-IN</code></td></tr>
+  <tr><td>10</td><td>Limits</td><td>10 minute / ~40 MB ceiling, enforced at ffprobe pre-flight, stated up-front in the UI</td></tr>
+  <tr><td>11</td><td>Progress</td><td>Full stage machine — upload % → validating → splitting into N → transcribing X/N → summarizing → done; refresh-resumable</td></tr>
+  <tr><td>12</td><td>Schema</td><td><code>notes</code> + <code>chunks</code> tables</td></tr>
+  <tr><td>13</td><td>Summary</td><td><code>{ title, tldr, keyPoints[], actionItems[] }</code> — title drives the notes list</td></tr>
+  <tr><td>14</td><td>/architecture</td><td>Constraint-driven narrative + sequence diagram + sync-vs-background table + honest limitations section + repo link</td></tr>
+  <tr><td>15</td><td>Sequencing</td><td>ffmpeg spike deployed Monday night → build locally → deploy Wednesday night → Thursday/Friday buffer</td></tr>
+</table>
+
+<h2>6 &mdash; Assumptions baked into the build</h2>
+
+<ul>
+  <li>ffprobe pre-flight is job step 0; nothing reaches ASR before the file is proven decodable.</li>
+  <li>ASR fan-out concurrency <strong>4</strong>, 3 retries, exponential backoff on <code>429</code>/<code>500</code>/<code>503</code>.</li>
+  <li>Client polls <code>/api/jobs/:id</code> every 2 s (not SSE — with <code>waitUntil</code> an SSE route would just poll Postgres for you).</li>
+  <li>Summarization is <strong>one call over the full stitched transcript</strong>; map-reduce is documented as future work, not built.</li>
+  <li>Note detail page shows an <code>&lt;audio&gt;</code> player against the Blob URL alongside transcript and summary.</li>
+  <li>No test suite — four days, and nothing in the brief asks for one.</li>
+  <li>Gap markers render inline as <code>[transcription unavailable: 3:04–3:31]</code>.</li>
+  <li>No subagents. One coherent codebase, written and interrogated in one session, so the code is genuinely owned.</li>
+</ul>
+
+<h2>7 &mdash; Timeline, blockers and cut list</h2>
+
+<h4>Blockers, in priority order</h4>
+<ol>
+  <li><strong>Gnani API key — Monday night, before anything else.</strong> Sign up at
+  <code>gnani.ai/speech-to-text-api</code>, confirm the Rs. 1,000 credits are live, take the key from
+  <code>app.gnani.ai/voice</code>. It gates all of Tuesday and the provisioning delay is outside your control.
+  If it has not arrived by Tuesday morning, email Sabari.</li>
+  <li><strong>Record ~3 minutes of yourself talking.</strong> You will know exactly what you said, which makes
+  it the only test file where you can judge transcript accuracy and spot chunk-boundary damage. Record a
+  second clip in an Indic language for the seeded demo note.</li>
+  <li><code>npm i -g vercel</code> — the Vercel CLI is not installed; you will want <code>env pull</code> and <code>logs</code>.</li>
+</ol>
+
+<h4>Schedule</h4>
+<table>
+  <tr><th style="width:20%">When</th><th>What</th></tr>
+  <tr><td>Mon night</td><td>Gnani signup (parallel) + throwaway Vercel route proving <code>ffmpeg-static</code> executes in production</td></tr>
+  <tr><td>Tuesday</td><td>Full pipeline: blob upload, schema, ffprobe, silence split, ASR fan-out, stitching, summary</td></tr>
+  <tr><td>Wednesday</td><td>UI, progress state machine, failure states, seeded demos — <strong>deploy Wednesday night</strong></td></tr>
+  <tr><td>Thursday</td><td>Architecture page, polish, mock-interview pass over the codebase</td></tr>
+  <tr><td>Friday</td><td>Buffer. Submit well before 23:59 IST.</td></tr>
+</table>
+
+<h4>If behind — cut in this order</h4>
+<ol>
+  <li>Silence-aware split → degrade to fixed 30 s segments (one ffmpeg flag, ten minutes) and name it in "what I'd improve".</li>
+  <li>Retry-failed-segments → degrade to a full-note retry.</li>
+  <li>Seeded demo notes.</li>
+</ol>
+<p class="small">Never cut: the deployed URL, the /architecture page, visible failure handling, or the progress
+counter. Those four are named explicitly in the brief.</p>
+
+<div class="pagebreak"></div>
+<h2>8 &mdash; Glossary for quick revision</h2>
+
+<table>
+  <tr><th style="width:26%">Term</th><th>One-line definition</th></tr>
+  <tr><td>ASR / STT</td><td>Automatic Speech Recognition / Speech-To-Text — turning spoken audio into written words.</td></tr>
+  <tr><td>Client / server</td><td>The browser (visible to the user, no secrets) vs your backend (private, holds the API key).</td></tr>
+  <tr><td>API endpoint</td><td>A specific URL on a server that accepts requests and returns data.</td></tr>
+  <tr><td>multipart/form-data</td><td>The HTTP body format used to send files alongside text fields in one request.</td></tr>
+  <tr><td>Synchronous</td><td>Ask and wait on the connection for the answer. A phone call.</td></tr>
+  <tr><td>Asynchronous</td><td>Ask, disconnect, get told later. A text message.</td></tr>
+  <tr><td>202 Accepted</td><td>"I have your request and will work on it" — the correct reply when work outlives the request.</td></tr>
+  <tr><td>429</td><td>Too Many Requests — the server telling you to slow down.</td></tr>
+  <tr><td>Transient vs permanent</td><td>An error that might succeed on retry (429/500/503) vs one that never will (400).</td></tr>
+  <tr><td>Object storage / Blob</td><td>A hard drive on the internet. Give it a file, get back a URL. Cannot be queried.</td></tr>
+  <tr><td>Database</td><td>Structured, queryable facts. Holds the Blob URL, not the bytes.</td></tr>
+  <tr><td>ffmpeg</td><td>Command-line tool that converts, cuts and analyses audio and video.</td></tr>
+  <tr><td>ffprobe</td><td>ffmpeg's inspector — reports what a file is without changing it.</td></tr>
+  <tr><td>Pre-flight check</td><td>Validate cheaply before committing to expensive work.</td></tr>
+  <tr><td>silencedetect</td><td>An ffmpeg filter that reports every pause in the audio — the basis of clean chunk boundaries.</td></tr>
+  <tr><td>Chunking</td><td>Splitting one long input into many small ones that fit an API's limit.</td></tr>
+  <tr><td>Fan-out / fan-in</td><td>One task split into many parallel sub-tasks / collecting their results back into one.</td></tr>
+  <tr><td>Concurrency</td><td>How many operations you allow to be in flight at once. Four checkout counters, not fifteen.</td></tr>
+  <tr><td>Retry</td><td>Attempting a failed operation again.</td></tr>
+  <tr><td>Exponential backoff</td><td>Waiting twice as long before each successive retry — 1 s, 2 s, 4 s — so a struggling service can recover.</td></tr>
+  <tr><td>Jitter</td><td>A small random offset added to backoff so many clients do not retry in lockstep.</td></tr>
+  <tr><td>Idempotency</td><td>An operation safe to run twice with the same result — matters when retries might duplicate work.</td></tr>
+  <tr><td>Graceful degradation</td><td>Returning partial value on failure instead of nothing.</td></tr>
+  <tr><td>State machine</td><td>A fixed set of states and the allowed transitions between them — pending → processing → done / failed.</td></tr>
+  <tr><td>Polling</td><td>The client repeatedly asking "is it done yet?" on a timer.</td></tr>
+  <tr><td>SSE</td><td>Server-Sent Events — server holds a connection open and pushes updates one way.</td></tr>
+  <tr><td>WebSocket</td><td>A persistent two-way connection between browser and server.</td></tr>
+  <tr><td>Serverless function</td><td>Backend code that runs on demand per request, with no long-lived process you own.</td></tr>
+  <tr><td>waitUntil</td><td>Keeps a serverless invocation alive to finish background work after the response is sent.</td></tr>
+  <tr><td>Cron job</td><td>Code that runs automatically on a fixed schedule.</td></tr>
+  <tr><td>Stale-job reaper</td><td>A scheduled sweep that fails jobs stuck in "processing" past a deadline.</td></tr>
+  <tr><td>Cookie</td><td>Small data the server asks the browser to store and resend on every request.</td></tr>
+  <tr><td>httpOnly</td><td>A cookie flag meaning page JavaScript cannot read it — only the server can.</td></tr>
+  <tr><td>Environment variable</td><td>Configuration (like an API key) supplied to the server at runtime, never committed to git.</td></tr>
+  <tr><td>LLM</td><td>Large Language Model — the AI that writes the summary.</td></tr>
+  <tr><td>Structured output</td><td>Forcing the LLM to return a validated data shape instead of free prose.</td></tr>
+  <tr><td>Zod schema</td><td>A TypeScript way of describing and validating a data shape.</td></tr>
+  <tr><td>Model fallback</td><td>Automatically routing to a backup model when the primary is unavailable.</td></tr>
+  <tr><td>Map-reduce (summarising)</td><td>Summarising each chunk, then summarising the summaries — needed only for very long transcripts.</td></tr>
+  <tr><td>BCP-47</td><td>The language-code standard: <code>hi-IN</code> = Hindi, India.</td></tr>
+  <tr><td>Sample rate</td><td>Measurements of audio per second. 16 kHz mono is the speech-model standard.</td></tr>
+  <tr><td>ITN</td><td>Inverse Text Normalization — "twenty five" becomes "25".</td></tr>
+  <tr><td>Diarization</td><td>Identifying which speaker said what. Not available in Gnani's <code>/stt/v3</code>.</td></tr>
+  <tr><td>WER</td><td>Word Error Rate — the accuracy metric ASR companies compete on.</td></tr>
+  <tr><td>Code-switching</td><td>Mixing two languages within one sentence. Common in India, hard for ASR.</td></tr>
+</table>
+
+<h2>9 &mdash; Interview questions to rehearse</h2>
+
+<p>If you can answer these out loud without notes, you own this project.</p>
+
+<ol>
+  <li>Gnani's API takes 60 seconds. The brief asked for 2+ minutes. What did you do, and why that way?</li>
+  <li>Why cut on silence instead of every 30 seconds? What breaks if you do not?</li>
+  <li>Why concurrency 4? What happens at 15? What happens at 1?</li>
+  <li>Chunk 7 of 15 fails. Walk me through exactly what the user sees and what the database looks like.</li>
+  <li>Which HTTP errors do you retry and which do you not? Why?</li>
+  <li>Why exponential backoff rather than retrying immediately?</li>
+  <li>Why does your job endpoint return 202 instead of the transcript?</li>
+  <li>What runs synchronously and what runs in the background? Draw the boundary.</li>
+  <li>The server crashes at chunk 9. What happens to that note? Who notices, and how?</li>
+  <li>Why is the audio in Blob and not in Postgres?</li>
+  <li>Why does the upload go browser → Blob instead of browser → your server → Blob?</li>
+  <li>Why polling instead of WebSockets or SSE?</li>
+  <li>Where does your Gnani API key live, and why can it never be in the client?</li>
+  <li>A user uploads a renamed PDF. Trace what happens, step by step.</li>
+  <li>How would you raise the 10-minute cap to 2 hours? What would have to change first?</li>
+  <li>What are the three weakest parts of your system, and what would you build instead?</li>
+</ol>
+
+<hr>
+<p class="small">Prepared for Raghav Gangwar &middot; Gnani.ai Full-Stack / AI Engineer take-home &middot; August 2026</p>
+
+</body>
+</html>
