@@ -14,6 +14,11 @@ import path from "node:path";
 import os from "node:os";
 
 import { ffmpeg, ffprobe } from "./ffmpeg";
+import { formatMs } from "./format";
+
+// Re-exported because gap markers and error messages built here use it, and
+// existing callers import it from this module.
+export { formatMs };
 
 /**
  * Chunk sizing. The target is deliberately below the hard cap so that the
@@ -284,8 +289,3 @@ export function workspace(): Promise<string> {
   return mkdtemp(path.join(os.tmpdir(), "note-"));
 }
 
-/** 432000 -> "7:12". Used in gap markers and error messages. */
-export function formatMs(ms: number): string {
-  const total = Math.round(ms / 1000);
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-}
