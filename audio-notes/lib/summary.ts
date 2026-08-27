@@ -62,6 +62,12 @@ export async function summarize(
         model: google(model),
         schema: SummarySchema,
         prompt,
+        // Gemini 2.5 models "think" before answering by default, which adds
+        // several seconds of latency. Summarising into four fixed fields is
+        // extraction, not reasoning -- thinking buys nothing here.
+        providerOptions: {
+          google: { thinkingConfig: { thinkingBudget: 0 } },
+        },
       });
       return object;
     } catch (err) {

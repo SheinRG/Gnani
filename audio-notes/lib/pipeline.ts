@@ -58,22 +58,18 @@ export async function runPipeline(note: NoteRow): Promise<void> {
       size_bytes: info.sizeBytes,
     });
 
-    // -- Plan and cut -----------------------------------------------------
+    // -- Plan the cuts ----------------------------------------------------
     await updateNote(note.id, { stage: "chunking" });
     const silences = await detectSilences(src);
     const plans = planChunks(info.durationMs, silences);
     await insertChunks(note.id, plans);
 
-    const files = new Map<number, string>();
-    for (const plan of plans) {
-      const dest = path.join(dir, `chunk-${plan.idx}.wav`);
-      await extractChunk(src, dest, plan.startMs, plan.endMs);
-      files.set(plan.idx, dest);
-    }
-
     // -- Fan out ----------------------------------------------------------
+    // Extraction happens inside each worker (see transcribePlans): chunk 0
+    // is already crossing the network while chunk 1 is still being cut,
+    // instead of every ASR call waiting for the full set of extractions.
     await updateNote(note.id, { stage: "transcribing" });
-    const failure = await transcribePlans(note, plans, files);
+    const failure = await transcribePlans(note, plans, src, dir);
 
     // A poisoned-key failure aborts with a clear message instead of writing
     // twenty identical gap markers.
@@ -127,16 +123,12 @@ export async function retryFailedChunks(note: NoteRow): Promise<void> {
       forced: c.forced,
     }));
 
-    const files = new Map<number, string>();
+    // Back to pending so the UI shows these segments as in-flight again.
     for (const plan of plans) {
-      const dest = path.join(dir, `chunk-${plan.idx}.wav`);
-      await extractChunk(src, dest, plan.startMs, plan.endMs);
-      files.set(plan.idx, dest);
-      // Back to pending so the UI shows these segments as in-flight again.
       await updateChunk(note.id, plan.idx, { status: "pending", error: null });
     }
 
-    const failure = await transcribePlans(note, plans, files);
+    const failure = await transcribePlans(note, plans, src, dir);
     if (failure) {
       await updateNote(note.id, { status: "failed", stage: null, error: failure });
       return;
@@ -159,11 +151,18 @@ export async function retryFailedChunks(note: NoteRow): Promise<void> {
  * Runs the ASR fan-out and records every outcome. Returns a message only for
  * failures that make continuing pointless (bad API key); otherwise null, and
  * per-chunk verdicts live in the chunks table.
+ *
+ * Each worker cuts its own chunk from the source right before sending it, so
+ * ffmpeg work for chunk N overlaps the network wait of chunks N-1..N-3
+ * instead of running as a serial prologue before the first request. It also
+ * scopes extraction failures to one chunk (a gap marker) rather than the
+ * whole job.
  */
 async function transcribePlans(
   note: NoteRow,
   plans: ChunkPlan[],
-  files: Map<number, string>,
+  src: string,
+  dir: string,
 ): Promise<string | null> {
   let fatal: string | null = null;
 
@@ -171,7 +170,9 @@ async function transcribePlans(
     plans,
     CONCURRENCY,
     async (plan) => {
-      const audio = await readFile(files.get(plan.idx)!);
+      const file = path.join(dir, `chunk-${plan.idx}.wav`);
+      await extractChunk(src, file, plan.startMs, plan.endMs);
+      const audio = await readFile(file);
       return transcribeChunk(new Uint8Array(audio), `chunk-${plan.idx}.wav`, {
         language: note.language as LanguageCode,
       });
