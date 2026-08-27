@@ -77,8 +77,10 @@ export default function HomePage() {
     setPhase({ kind: "uploading", percent: 0 });
 
     try {
+      // Private store: recordings are never on a publicly guessable URL.
+      // The server reads them back with its own token.
       const blob = await upload(file.name, file, {
-        access: "public",
+        access: "private",
         handleUploadUrl: "/api/upload",
         onUploadProgress: ({ percentage }) =>
           setPhase({ kind: "uploading", percent: percentage }),

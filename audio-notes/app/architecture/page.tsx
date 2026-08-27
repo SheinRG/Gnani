@@ -72,9 +72,10 @@ export default function ArchitecturePage() {
           </li>
           <li>
             <strong>Summary:</strong> the stitched transcript goes through the
-            AI SDK&apos;s <code>generateObject</code> via Vercel AI Gateway
-            (with model fallback) into a fixed schema: title, TL;DR, key
-            points, action items.
+            AI SDK&apos;s <code>generateObject</code> against Gemini (with
+            model fallback) into a fixed schema: title, TL;DR, key points,
+            action items. A schema instead of free prose means a malformed
+            response is a caught error, not a broken page.
           </li>
         </ol>
       </Section>
@@ -111,7 +112,7 @@ export default function ArchitecturePage() {
           <li>Neon Postgres (HTTP driver — stateless, serverless-shaped)</li>
           <li>Vercel Blob for audio storage, direct browser upload</li>
           <li>Bundled ffmpeg/ffprobe binaries, spawned as child processes</li>
-          <li>Vercel AI Gateway + AI SDK for the structured summary</li>
+          <li>AI SDK + Gemini for the structured summary</li>
           <li>
             Anonymous httpOnly cookie session — every query is scoped to it;
             no accounts, nothing for a reviewer to sign up for

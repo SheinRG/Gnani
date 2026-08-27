@@ -252,12 +252,16 @@ function gapMarker(chunk: ChunkRow): string {
 }
 
 async function download(url: string, dest: string): Promise<void> {
-  const res = await fetch(url);
-  if (!res.ok) {
+  // The store is private: a plain fetch of the URL would 403. The SDK signs
+  // the read with this deployment's BLOB_READ_WRITE_TOKEN.
+  const { get } = await import("@vercel/blob");
+  const result = await get(url, { access: "private" });
+  if (!result) {
     throw new AudioError(
       "The uploaded file could not be retrieved from storage.",
       "undecodable",
     );
   }
-  await writeFile(dest, new Uint8Array(await res.arrayBuffer()));
+  const bytes = await new Response(result.stream).arrayBuffer();
+  await writeFile(dest, new Uint8Array(bytes));
 }

@@ -6,12 +6,17 @@
  * makes "the model returned something unrenderable" a caught error instead of
  * a broken page.
  *
- * Models are addressed through the Vercel AI Gateway by plain string id, and
- * tried in order: if the first provider is down or over quota, the next one
- * gets a chance. The summary failing entirely must never sink the note -- a
- * transcript without a summary is still a useful artifact, so the caller
- * treats a null summary as a degradation, not a failure.
+ * Provider note: the original design routed through Vercel AI Gateway, but
+ * the Gateway refuses requests until a credit card is on file. Google's
+ * Gemini API has a card-free tier, so we call it directly through the AI
+ * SDK's Google provider instead -- the provider choice is confined to this
+ * module, so swapping back is a two-line change. Models are tried in order:
+ * if the first is down or over quota, the next gets a chance. The summary
+ * failing entirely must never sink the note -- a transcript without a summary
+ * is still a useful artifact, so the caller treats a null summary as a
+ * degradation, not a failure.
  */
+import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
 
@@ -35,8 +40,8 @@ const SummarySchema = z.object({
     ),
 });
 
-/** Tried in order. Both are fast, cheap, and comfortably fit the token budget. */
-const MODELS = ["google/gemini-2.5-flash", "openai/gpt-4o-mini"];
+/** Tried in order. Both are fast, free-tier, and fit the token budget. */
+const MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
 export async function summarize(
   transcript: string,
@@ -54,7 +59,7 @@ export async function summarize(
   for (const model of MODELS) {
     try {
       const { object } = await generateObject({
-        model,
+        model: google(model),
         schema: SummarySchema,
         prompt,
       });
