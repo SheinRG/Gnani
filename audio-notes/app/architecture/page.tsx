@@ -15,13 +15,12 @@ export default function ArchitecturePage() {
   return (
     <article className="space-y-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Architecture</h1>
-        <p className="mt-2 text-sm text-black/60 dark:text-white/60">
+        <h1 className="text-[28px] font-extrabold tracking-[-0.4px]">
+          Architecture
+        </h1>
+        <p className="mt-2 text-sm" style={{ color: "var(--color-neutral-700)" }}>
           Source, commit history and the full concept guide live in the{" "}
-          <a
-            href={REPO_URL}
-            className="font-medium text-emerald-600 underline underline-offset-2 dark:text-emerald-400"
-          >
+          <a href={REPO_URL} className="font-semibold underline underline-offset-2">
             GitHub repository
           </a>
           .
@@ -131,9 +130,19 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section>
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      <div className="mt-2 space-y-2 text-sm leading-relaxed text-black/80 dark:text-white/80">
+    <section
+      className="p-6"
+      style={{
+        background: "var(--color-neutral-100)",
+        border: "1px solid var(--color-divider)",
+        borderRadius: "var(--radius-lg)",
+      }}
+    >
+      <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+      <div
+        className="mt-2 space-y-2 text-[14.5px] leading-relaxed"
+        style={{ color: "var(--color-neutral-800)" }}
+      >
         {children}
       </div>
     </section>

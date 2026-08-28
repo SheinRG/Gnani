@@ -1,24 +1,45 @@
-/** The one visual vocabulary for note status, shared by history and detail. */
+/**
+ * The one visual vocabulary for note status, from the approved design:
+ * tag class for the pill, dot colors for the row's icon circle.
+ */
+export const STATUS_STYLE: Record<
+  string,
+  { label: string; tagClass: string; dotBg: string; dotFg: string }
+> = {
+  processing: {
+    label: "Working…",
+    tagClass: "tag-accent",
+    dotBg: "var(--color-accent-200)",
+    dotFg: "var(--color-accent-800)",
+  },
+  completed: {
+    label: "Ready",
+    tagClass: "tag-accent-2",
+    dotBg: "var(--color-accent-2-200)",
+    dotFg: "var(--color-accent-2-800)",
+  },
+  completed_with_errors: {
+    label: "Gaps",
+    tagClass: "tag-outline",
+    dotBg: "var(--color-accent-200)",
+    dotFg: "var(--color-accent-800)",
+  },
+  failed: {
+    label: "Failed",
+    tagClass: "tag-neutral",
+    dotBg: "var(--color-neutral-200)",
+    dotFg: "var(--color-neutral-700)",
+  },
+};
+
 export function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    processing:
-      "bg-amber-500/15 text-amber-700 dark:text-amber-400 animate-pulse",
-    completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-    completed_with_errors:
-      "bg-orange-500/15 text-orange-700 dark:text-orange-400",
-    failed: "bg-red-500/15 text-red-700 dark:text-red-400",
-  };
-  const labels: Record<string, string> = {
-    processing: "Processing",
-    completed: "Done",
-    completed_with_errors: "Done, with gaps",
-    failed: "Failed",
-  };
+  const st = STATUS_STYLE[status] ?? STATUS_STYLE.processing;
   return (
     <span
-      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${styles[status] ?? "bg-black/10 dark:bg-white/10"}`}
+      className={`tag ${st.tagClass} shrink-0 font-semibold`}
+      style={status === "processing" ? { animation: "gn-pulse 2s ease-in-out infinite" } : undefined}
     >
-      {labels[status] ?? status}
+      {st.label}
     </span>
   );
 }
