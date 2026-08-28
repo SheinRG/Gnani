@@ -119,11 +119,16 @@ export function Aurora() {
   }, []);
 
   return (
+    // Full-bleed breakout: the page content lives in a 960px column, but the
+    // ribbons must run edge-to-edge behind the header like the design file.
+    // -106px rewinds the header (~62px) plus main's top padding (44px); the
+    // bottom fade mask makes the exact figure non-critical.
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none absolute left-0 top-0 -z-10 w-full"
+      className="pointer-events-none absolute left-1/2 -z-10 w-screen -translate-x-1/2"
       style={{
+        top: -106,
         height: "min(72vh, 620px)",
         maskImage: "linear-gradient(to bottom, black 55%, transparent 100%)",
         WebkitMaskImage: "linear-gradient(to bottom, black 55%, transparent 100%)",

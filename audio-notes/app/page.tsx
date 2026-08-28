@@ -19,6 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LANGUAGES, type LanguageCode } from "@/lib/gnani";
 import { formatMs, formatBytes } from "@/lib/format";
 import { Aurora } from "./components/aurora";
+import { LanguageSelect } from "./components/language-select";
 import { STATUS_STYLE } from "./components/status-badge";
 
 const MAX_BYTES = 40 * 1024 * 1024;
@@ -365,18 +366,11 @@ export default function HomePage() {
               >
                 Spoken language
               </span>
-              <select
-                className="input w-full cursor-pointer"
+              <LanguageSelect
                 value={language}
+                onChange={setLanguage}
                 disabled={uploading}
-                onChange={(e) => setLanguage(e.target.value as LanguageCode)}
-              >
-                {LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
+              />
             </label>
             <button
               className="btn btn-primary inline-flex items-center gap-[9px] font-bold"
